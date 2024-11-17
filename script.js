@@ -1,47 +1,45 @@
-// Example profiles
-const profiles = [
-  {
-    name: "Celebrity A",
-    info: "This is information about Celebrity A.",
-    imageUrl: "https://via.placeholder.com/150", // Replace with a real image URL
-  },
-  {
-    name: "Politician B",
-    info: "This is information about Politician B.",
-    imageUrl: "https://via.placeholder.com/150", // Replace with a real image URL
-  },
-  // Add more profiles as needed
-];
-
-// Function to display profiles
-function displayProfiles(filteredProfiles) {
-  const profilesSection = document.getElementById('profiles');
-  profilesSection.innerHTML = ''; // Clear current profiles
-
-  filteredProfiles.forEach(profile => {
-    const profileDiv = document.createElement('div');
-    profileDiv.classList.add('profile');
-    profileDiv.innerHTML = `
-      <img src="${profile.imageUrl}" alt="${profile.name}" />
-      <h2>${profile.name}</h2>
-      <p>${profile.info}</p>
-    `;
-    profilesSection.appendChild(profileDiv);
-  });
-}
-
-// Function to filter profiles based on search input
+// Function to search for profiles on Wikipedia
 function searchProfiles() {
-  const query = document.getElementById('search-bar').value.toLowerCase();
+  const query = document.getElementById("search-bar").value;
+  const profileSection = document.getElementById("profiles");
 
-  // Filter profiles that match the query (name or info)
-  const filteredProfiles = profiles.filter(profile => {
-    return profile.name.toLowerCase().includes(query) || profile.info.toLowerCase().includes(query);
-  });
+  // Clear previous search results
+  profileSection.innerHTML = '';
 
-  // Display filtered profiles
-  displayProfiles(filteredProfiles);
+  if (query.length > 0) {
+    // Fetch data from Wikipedia API
+    const url = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&format=json`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        // Check if any results are found
+        if (data[1].length > 0) {
+          // Get the first result
+          const title = data[1][0];
+          const description = data[2][0];
+          const link = data[3][0];
+
+          // Create a profile card to display the information
+          const profileCard = document.createElement("div");
+          profileCard.classList.add("profile-card");
+          
+          // Add title, description, and link to profile card
+          profileCard.innerHTML = `
+            <h2>${title}</h2>
+            <p>${description}</p>
+            <a href="${link}" target="_blank">Read more on Wikipedia</a>
+          `;
+
+          // Append the profile card to the profile section
+          profileSection.appendChild(profileCard);
+        } else {
+          profileSection.innerHTML = "<p>No results found. Try a different name.</p>";
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching Wikipedia data:", error);
+        profileSection.innerHTML = "<p>Sorry, there was an error fetching the data.</p>";
+      });
+  }
 }
-
-// Call the function to display all profiles initially
-displayProfiles(profiles);
