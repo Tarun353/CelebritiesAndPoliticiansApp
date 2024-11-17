@@ -1,3 +1,4 @@
+
 async function searchProfiles() {
   const query = document.getElementById("search-bar").value;
   if (query.length < 3) return; // To avoid empty or too short queries
